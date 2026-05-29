@@ -1,11 +1,15 @@
 
 import { useState, useEffect } from 'react';
+import DOMPurify from 'dompurify';
 import { ja as t } from './translations';
 import { askConcierge } from './services/gemini';
 
+const sanitize = (text: string): string => DOMPurify.sanitize(text, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
+
 // --- Markdown Component ---
 const MarkdownText: React.FC<{ text: string }> = ({ text }) => {
-  const sections = text.split(/^---$/gm);
+  const cleanText = sanitize(text);
+  const sections = cleanText.split(/^---$/gm);
   return (
     <div className="space-y-6">
       {sections.map((section, sIdx) => {
@@ -80,6 +84,7 @@ const App: React.FC = () => {
   const [aiSources, setAiSources] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitSuccess, setIsSubmitSuccess] = useState(false);
+  const [lastAiRequestTime, setLastAiRequestTime] = useState<number>(0);
 
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
@@ -93,6 +98,13 @@ const App: React.FC = () => {
     e.preventDefault();
     if (!aiInput.trim() || isAiLoading) return;
 
+    const now = Date.now();
+    if (now - lastAiRequestTime < 10000) {
+      setAiMessage('連続でのご質問はお控えください。10秒後に再度お試しください。');
+      return;
+    }
+
+    setLastAiRequestTime(now);
     setIsAiLoading(true);
     setAiMessage('');
     setAiSources([]);
