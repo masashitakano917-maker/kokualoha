@@ -1,10 +1,13 @@
 
 import { useState, useEffect } from 'react';
-import DOMPurify from 'dompurify';
 import { ja as t } from './translations';
 import { askConcierge } from './services/gemini';
 
-const sanitize = (text: string): string => DOMPurify.sanitize(text, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
+const sanitize = (text: string): string =>
+  text.replace(/[<>&"']/g, (ch) => {
+    const map: Record<string, string> = { '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&#39;' };
+    return map[ch] || ch;
+  });
 
 // --- Markdown Component ---
 const MarkdownText: React.FC<{ text: string }> = ({ text }) => {
