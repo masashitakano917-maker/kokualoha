@@ -162,7 +162,7 @@ const App: React.FC = () => {
           <div className="w-16 h-1 bg-[#d4af37] mx-auto mb-10 sm:mb-14" />
           <div className="space-y-10">
             <p className="text-xl sm:text-3xl text-[#d4af37] font-medium leading-tight max-w-3xl mx-auto">
-              {t.about_desc}
+              Made in Hawaii を大切に、現地に根差した信頼できる<br />コンシェルジュサポートをご提供します。
             </p>
             <div className="space-y-8 opacity-80 leading-relaxed text-sm sm:text-lg max-w-3xl mx-auto text-left">
               {t.about_desc_long.split('\n\n').map((para, i) => (<p key={i}>{para}</p>))}
