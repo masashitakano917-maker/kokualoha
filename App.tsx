@@ -1,93 +1,12 @@
 
 import { useState, useEffect } from 'react';
 import { ja as t } from './translations';
-import { askConcierge } from './services/gemini';
 
-const sanitize = (text: string): string =>
-  text.replace(/[<>&"']/g, (ch) => {
-    const map: Record<string, string> = { '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&#39;' };
-    return map[ch] || ch;
-  });
-
-// --- Markdown Component ---
-const MarkdownText: React.FC<{ text: string }> = ({ text }) => {
-  const cleanText = sanitize(text);
-  const sections = cleanText.split(/^---$/gm);
-  return (
-    <div className="space-y-6">
-      {sections.map((section, sIdx) => {
-        const lines = section.trim().split('\n');
-        return (
-          <div key={sIdx} className="space-y-3">
-            {lines.map((line, lIdx) => {
-              const trimmedLine = line.trim();
-              
-              if (trimmedLine.startsWith('###')) {
-                const content = trimmedLine.replace(/^###\s*/, '').replace(/\*\*/g, '');
-                return (
-                  <h3 key={lIdx} className="text-xl sm:text-2xl font-serif font-bold text-[#d4af37] mt-8 mb-4 border-b border-[#d4af3733] pb-2">
-                    {content}
-                  </h3>
-                );
-              }
-
-              if (trimmedLine.startsWith('####')) {
-                const content = trimmedLine.replace(/^####\s*/, '').replace(/\*\*/g, '');
-                return (
-                  <h4 key={lIdx} className="text-lg font-bold text-[#e6e4df] mt-6 mb-2 flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-[#d4af37] rounded-full"></span>
-                    {content}
-                  </h4>
-                );
-              }
-
-              if (trimmedLine.startsWith('* ') || trimmedLine.startsWith('- ')) {
-                const content = trimmedLine.replace(/^[*-]\s*/, '');
-                const formattedContent = content.split(/(\*\*.*?\*\*)/).map((part, pIdx) => {
-                  if (part.startsWith('**') && part.endsWith('**')) {
-                    return <strong key={pIdx} className="text-[#d4af37] font-bold">{part.slice(2, -2)}</strong>;
-                  }
-                  return part;
-                });
-                return (
-                  <div key={lIdx} className="flex gap-3 pl-4 py-1">
-                    <span className="text-[#d4af37] shrink-0 font-bold">•</span>
-                    <p className="text-[#e6e4df] opacity-90">{formattedContent}</p>
-                  </div>
-                );
-              }
-
-              if (trimmedLine === '') return <div key={lIdx} className="h-2" />;
-              
-              const formattedLine = line.split(/(\*\*.*?\*\*)/).map((part, pIdx) => {
-                if (part.startsWith('**') && part.endsWith('**')) {
-                  return <strong key={pIdx} className="text-[#d4af37] font-bold">{part.slice(2, -2)}</strong>;
-                }
-                return part;
-              });
-
-              return (
-                <p key={lIdx} className="text-[#e6e4df] leading-[1.8] opacity-95">
-                  {formattedLine}
-                </p>
-              );
-            })}
-          </div>
-        );
-      })}
-    </div>
-  );
-};
 
 const App: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [aiMessage, setAiMessage] = useState<string>('');
-  const [aiInput, setAiInput] = useState<string>('');
-  const [isAiLoading, setIsAiLoading] = useState(false);
-  const [aiSources, setAiSources] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitSuccess, setIsSubmitSuccess] = useState(false);
-  const [lastAiRequestTime, setLastAiRequestTime] = useState<number>(0);
 
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
@@ -96,27 +15,6 @@ const App: React.FC = () => {
     document.querySelectorAll('.fade-in-section').forEach((el) => observer.observe(el));
     return () => observer.disconnect();
   }, []);
-
-  const handleAiAsk = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!aiInput.trim() || isAiLoading) return;
-
-    const now = Date.now();
-    if (now - lastAiRequestTime < 10000) {
-      setAiMessage('連続でのご質問はお控えください。10秒後に再度お試しください。');
-      return;
-    }
-
-    setLastAiRequestTime(now);
-    setIsAiLoading(true);
-    setAiMessage('');
-    setAiSources([]);
-
-    const result = await askConcierge(aiInput);
-    setAiMessage(result.text);
-    setAiSources(result.sources as string[]);
-    setIsAiLoading(false);
-  };
 
   const handleContactSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -255,83 +153,6 @@ const App: React.FC = () => {
 
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-60 cursor-pointer" onClick={() => scrollTo('service')}>
           <div className="scroll-down-indicator" />
-        </div>
-      </section>
-
-      {/* AI Assistant Section */}
-      <section className="bg-[#0b0b0c] py-12 sm:py-24 px-4 sm:px-6">
-        <div className="max-w-4xl mx-auto fade-in-section">
-          <div className="bg-[#17181a] rounded-2xl sm:rounded-[2.5rem] p-5 sm:p-10 border border-[#d4af3733] shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-[#d4af37] opacity-[0.03] blur-3xl pointer-events-none" />
-            
-            <div className="mb-8">
-              <div className="flex items-center gap-4 mb-3">
-                <div className="w-14 h-14 bg-[#d4af37] rounded-2xl flex items-center justify-center text-black shadow-lg shadow-[#d4af3733] shrink-0">
-                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                  </svg>
-                </div>
-                <h3 className="text-xl sm:text-2xl font-bold text-[#d4af37]">{t.ai_assistant_title}</h3>
-              </div>
-              <p className="text-[10px] sm:text-xs text-[#e6e4df] opacity-50 italic leading-relaxed pl-[4.5rem]">
-                {t.ai_assistant_disclaimer}
-              </p>
-            </div>
-            
-            <form onSubmit={handleAiAsk} className="relative mb-6">
-              <input 
-                type="text" 
-                value={aiInput}
-                onChange={(e) => setAiInput(e.target.value)}
-                placeholder={t.ai_assistant_placeholder}
-                className="w-full bg-[#0b0b0c] border border-[#d4af3733] rounded-xl sm:rounded-2xl px-5 py-4 sm:py-5 pr-14 focus:outline-none focus:border-[#d4af37] transition-all text-sm sm:text-base placeholder:opacity-30"
-                disabled={isAiLoading}
-              />
-              <button 
-                type="submit"
-                disabled={isAiLoading}
-                className="absolute right-3 top-1/2 -translate-y-1/2 bg-[#d4af37] text-black p-2 rounded-lg sm:rounded-xl disabled:opacity-50 hover:bg-[#c29d2e] transition-colors"
-              >
-                {isAiLoading ? (
-                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                ) : (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                  </svg>
-                )}
-              </button>
-            </form>
-
-            {aiMessage && (
-              <div className="bg-[#0b0b0c]/50 rounded-xl sm:rounded-2xl p-6 sm:p-10 border border-[#d4af371a] animate-in fade-in slide-in-from-bottom-2 duration-500 shadow-inner">
-                <MarkdownText text={aiMessage} />
-                
-                <div className="mt-8 pt-8 border-t border-[#d4af371a] flex flex-col gap-6">
-                  {aiSources.length > 0 && (
-                    <div>
-                      <p className="text-[10px] uppercase tracking-widest text-[#d4af37] mb-4 font-bold opacity-60">Verified Sources</p>
-                      <ul className="flex flex-wrap gap-2">
-                        {aiSources.map((url, i) => (
-                          <li key={i}>
-                            <a href={url} target="_blank" rel="noopener noreferrer" className="text-[10px] bg-[#d4af371a] px-3 py-1.5 rounded-lg border border-[#d4af3726] hover:bg-[#d4af3733] transition-colors inline-block whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px]">
-                              {new URL(url).hostname}
-                            </a>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  
-                  <div className="text-[10px] sm:text-xs text-[#e6e4df] opacity-40 leading-relaxed italic border-l-2 border-[#d4af3733] pl-4">
-                    ※ AIコンシェルジュの回答は必ずしも正確でない場合があります。重要な情報や緊急のご相談については、必ず公的機関や弊社スタッフへ直接ご確認ください。
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
         </div>
       </section>
 

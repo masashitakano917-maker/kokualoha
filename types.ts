@@ -49,7 +49,4 @@ export interface TranslationSchema {
   contact_send: string;
   footer_rights: string;
   footer_copyright: string;
-  ai_assistant_title: string;
-  ai_assistant_placeholder: string;
-  ai_assistant_disclaimer: string;
 }
