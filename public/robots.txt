@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://kokualoha.com/sitemap.xml
