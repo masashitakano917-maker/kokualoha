@@ -64,11 +64,13 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet" />
 
     <style>
       :root {
         --gold: #d4af37;
+        --gold-dark: #996f00;
+        --gold-light: #f5d780;
       }
       html {
         scroll-behavior: smooth;
@@ -76,6 +78,7 @@
       }
       body {
         font-family: 'Noto Sans JP', sans-serif;
+        font-weight: 300;
         background-color: #0b0b0c;
         color: #e6e4df;
         -webkit-font-smoothing: antialiased;
@@ -83,19 +86,60 @@
         overflow-x: hidden;
       }
       .font-serif {
-        font-family: 'Playfair Display', serif;
+        font-family: 'Cormorant Garamond', 'Playfair Display', serif;
       }
-      
+
+      /* Gold Gradient Text */
+      .gold-text {
+        background: linear-gradient(135deg, #b8860b 0%, #d4af37 25%, #ffd700 50%, #d4af37 75%, #b8860b 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      /* Gold Gradient Button */
+      .gold-btn {
+        background: linear-gradient(135deg, #b8860b 0%, #d4af37 40%, #e8c252 60%, #d4af37 100%);
+        position: relative;
+        overflow: hidden;
+      }
+      .gold-btn::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%);
+        opacity: 0;
+        transition: opacity 0.4s ease;
+      }
+      .gold-btn:hover::after {
+        opacity: 1;
+      }
+
+      /* Gold Divider */
+      .gold-divider {
+        background: linear-gradient(90deg, transparent, #b8860b, #d4af37, #ffd700, #d4af37, #b8860b, transparent);
+      }
+
+      /* Card Glow */
+      .card-luxury {
+        box-shadow: 0 0 30px rgba(212, 175, 55, 0.03), inset 0 1px 0 rgba(212, 175, 55, 0.08);
+        transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      .card-luxury:hover {
+        box-shadow: 0 0 40px rgba(212, 175, 55, 0.08), 0 20px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(212, 175, 55, 0.15);
+        transform: translateY(-4px);
+      }
+
       /* Safe Area Spacing for Mobile */
       .safe-top {
         padding-top: env(safe-area-inset-top);
       }
-      
+
       /* Fade-in Animation Utility */
       .fade-in-section {
         opacity: 0;
-        transform: translateY(20px);
-        transition: opacity 1s cubic-bezier(0.22, 1, 0.36, 1), transform 1s cubic-bezier(0.22, 1, 0.36, 1);
+        transform: translateY(24px);
+        transition: opacity 1.2s cubic-bezier(0.22, 1, 0.36, 1), transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
       }
       .fade-in-section.is-visible {
         opacity: 1;
@@ -108,22 +152,22 @@
         to { opacity: 1; transform: translateY(0); }
       }
       .hero-animate {
-        animation: fadeInUp 1.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        animation: fadeInUp 1.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       }
 
       /* Custom Scrollbar */
       ::-webkit-scrollbar {
-        width: 6px;
+        width: 5px;
       }
       ::-webkit-scrollbar-track {
         background: #0b0b0c;
       }
       ::-webkit-scrollbar-thumb {
-        background: #d4af3733;
+        background: linear-gradient(180deg, #b8860b, #d4af37);
         border-radius: 3px;
       }
       ::-webkit-scrollbar-thumb:hover {
-        background: #d4af3766;
+        background: linear-gradient(180deg, #d4af37, #ffd700);
       }
 
       /* Scroll Indicator */
@@ -142,7 +186,7 @@
         transform: translateX(-50%);
         width: 3px;
         height: 6px;
-        background-color: #d4af37;
+        background: linear-gradient(180deg, #d4af37, #ffd700);
         border-radius: 2px;
         animation: scrollWheel 2.5s ease-in-out infinite;
       }
@@ -151,6 +195,11 @@
         40% { opacity: 1; }
         80% { opacity: 0; transform: translate(-50%, 12px); }
         100% { opacity: 0; }
+      }
+
+      /* Input focus glow */
+      input:focus, textarea:focus {
+        box-shadow: 0 0 20px rgba(212, 175, 55, 0.08);
       }
     </style>
 </head>
